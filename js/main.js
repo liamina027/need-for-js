@@ -35,6 +35,7 @@ function getQuantityElements (heightElement) {
 //Функция - начало игры 
 function startGame () {
     start.classList.add('hide'); // добавление класса (скрыть блок)
+    gameArea.innerHTML = ''; //очистка игрового поля
     //ЦИКЛ - добавление разметки на дорогу
     for (let i = 0; i < getQuantityElements(100); i++) {
         const line = document.createElement('div');
@@ -53,8 +54,12 @@ function startGame () {
         enemy.style.background = 'transparent url(../img/enemy.png) center / cover no-repeat';
         gameArea.appendChild(enemy);
     }
+    setting.score = 0;
     setting.start = true;
     gameArea.appendChild(car); //добавление элемента (gameArea - родитель, car - ребенок)
+    car.style.left = (gameArea.offsetWidth/2 - car.offsetWidth/2) + 'px';
+    car.style.top = 'auto';
+    car.style.bottom = '10px';
     setting.x = car.offsetLeft; //Добавление свойства х(координата по горизонтальной оси) в объект setting
     setting.y = car.offsetTop; // Добавление свойства y(координата по вертикальной оси) в объект setting
     requestAnimationFrame (playGame); // запуск анимации (анимация ф-ии playGame)
@@ -63,6 +68,8 @@ function startGame () {
 //Функция - запуск игры
 function playGame () {
     if (setting.start) {
+        setting.score += setting.speed; //увеличение очков игры
+        score.innerHTML = 'SCORE: <br>' + setting.score; // вывод очков
         moveRoad();
         moveEnemy();
         //Реализация передвижения автомобиля
@@ -118,6 +125,18 @@ function moveRoad () {
 function moveEnemy () {
     let enemy = document.querySelectorAll('.enemy');
     enemy.forEach (function(item) {
+        let carRect = car.getBoundingClientRect(); //получение всех параметров автомобиля
+        let enemyRect = item.getBoundingClientRect();
+        //Столкновение автомобилей
+        if (carRect.top <= enemyRect.bottom &&
+            carRect.right >= enemyRect.left &&
+            carRect.left <= enemyRect.right &&
+            carRect.bottom >= enemyRect.top) {
+                setting.start = false;
+                console.warn("ДТП");
+                start.classList.remove('hide'); //удаление класса hide
+                start.style.top = score.offsetHeight + 'px';
+        }
         item.y += setting.speed / 2;
         item.style.top = item.y + 'px';
 
